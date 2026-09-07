@@ -1,0 +1,24 @@
+MacBook Product Catalog
+
+MacBook Pro 16-inch:
+Price: Starting at $2,000
+Processor: M4 Max chip — 14-core CPU, 32-core GPU, 16-core Neural Engine
+Memory: 36GB / 48GB / 64GB / 96GB / 128GB unified memory
+Storage: 512GB / 1TB / 2TB / 4TB SSD
+Display: 16.2-inch Liquid Retina XDR, 3456×2234, ProMotion 120Hz, 1000 nits sustained / 1600 nits peak
+Battery: Up to 24 hours, 140W USB-C fast charge
+Ports: 3× Thunderbolt 5, HDMI 2.1, SDXC card slot, MagSafe 3, 3.5mm headphone jack
+Colors: Space Black, Silver
+Keyboard: Magic Keyboard with Touch ID, backlit keys, Force Touch trackpad
+
+AppleCare+ for MacBook Pro:
+Price: $299 (MacBook Pro 14") / $399 (MacBook Pro 16")
+Coverage: Up to three years, two accidental damage incidents per year ($99 screen/external, $299 other), Apple-certified repairs
+
+Accessories:
+Apple USB-C to MagSafe 3 Cable: $49
+140W USB-C Power Adapter: $79
+Apple Pro Display XDR: $4,999
+Magic Mouse: $79
+Magic Trackpad: $129
+Magic Keyboard with Touch ID: $99

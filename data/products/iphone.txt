@@ -1,0 +1,24 @@
+iPhone Product
+
+iPhone 16 Pro Max:
+Price: $1,199
+Storage: 256GB / 512GB / 1TB
+Colors: Black Titanium, White Titanium, Natural Titanium, Desert Titanium
+Display: 6.9-inch Super Retina XDR OLED, ProMotion 120Hz, Always-On Display
+Processor: A18 Pro chip with 6-core CPU and 6-core GPU
+Camera: 48MP Fusion main, 12MP ultrawide, 5x optical zoom telephoto, 4K 120fps video
+Battery: Up to 33 hours video playback, USB-C fast charging
+Features: Face ID, Dynamic Island, Action Button, Camera Control button, MagSafe
+Connectivity: 5G, Wi-Fi 7, Bluetooth 5.3, Ultra Wideband
+OS: iOS 18
+
+AppleCare+ for iPhone:
+Price: $199/year or $9.99/month
+Coverage: Unlimited accidental damage repairs ($29 screen, $99 other), express replacement service, 24/7 priority support
+
+Accessories:
+MagSafe Charger: $39
+USB-C to MagSafe 3 Cable: $49
+Apple iPhone Case with MagSafe: $49–$59
+AirTag (for Find My): $29 each, 4-pack $99
+Lightning to USB-C Adapter: $29

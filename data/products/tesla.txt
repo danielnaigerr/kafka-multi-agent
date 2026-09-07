@@ -1,0 +1,23 @@
+Tesla Vehicle Catalog
+
+Tesla Model S
+Base Price: $74,990
+Variant: Model S Long Range — up to 405 miles EPA range
+Variant: Model S Plaid — up to 396 miles, 0–60 mph in 1.99 seconds, 1,020 hp
+Top Speed: 155 mph (Long Range) / 200 mph (Plaid with Track Package)
+Charging: Supercharger V3 up to 250kW, 15 min for 200 miles
+Display: 17-inch horizontal cinematic touchscreen, 12.3-inch front passenger display
+Autopilot: Standard Autopilot included; Full Self-Driving (FSD) available ($8,000 or $99/month)
+Interior: 5-seat or 7-seat configuration (optional)
+Colors: Pearl White, Midnight Silver, Deep Blue, Red Multi-Coat, Stealth Grey, Ultra Red
+Warranty: 4-year/50,000-mile basic, 8-year/150,000-mile battery and drive unit
+
+Full Self-Driving (FSD) Capability
+Price: $8,000 one-time or $99/month subscription
+Features: Navigate on Autopilot, Auto Lane Change, Auto Park, Summon, Traffic Light and Stop Sign Control, Autosteer on city streets
+Note: Requires driver supervision; not fully autonomous
+
+Tesla Charging Solutions
+Home Wall Connector: $400 + installation, up to 44 miles per hour of charge
+Supercharger Network: 50,000+ Superchargers globally, pay per kWh
+Mobile Connector: Included with new vehicles, J1772 adapter included
