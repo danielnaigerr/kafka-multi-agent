@@ -192,7 +192,7 @@ Every state change in the pipeline is an immutable event on a Kafka topic. `conv
 Key properties:
 - Tool workers are purely functional: input event → output event, no shared mutable state.
 - The Orchestrator reads from and writes to its own LevelDB store; every transition is triggered by an event.
-- If the Orchestrator crashes mid-plan, `ToolInvocationResulted` events are already durable in Kafka. On restart, the plan is restored from LevelDB and processing resumes from `stepIndex`.
+- If the Orchestrator crashes mid-plan, `ToolInvocationResulted` events are already durable in Kafka, and the plan state is still in LevelDB. Recovery is **event-driven**: on startup `initializeStore()` only opens the store, nothing scans it, so a plan resumes from `stepIndex` when the next event for its `conversationId` arrives. A plan whose crash happened after `savePlan()` but before its `ToolInvocationRequested` was published is never re-dispatched — closing that gap would require a startup pass over the store.
 
 ---
 

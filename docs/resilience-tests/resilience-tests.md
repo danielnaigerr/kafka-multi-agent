@@ -18,7 +18,7 @@ resumes from the last committed offset, so no message is lost.
 
 Step 1 — Start all services
 
-    bash scripts/start-final.sh
+    bun run start
     open http://localhost:3001   # or bun run web:dev for hot-reload
 
 Step 2 — Send a query that triggers the weather worker
@@ -48,7 +48,8 @@ Step 4 — Send another query while the worker is down
 
     The orchestrator dispatches the tool to the topic but the worker is gone.
     The plan will not complete until the worker is restarted. The orchestrator
-    holds state in memory and waits.
+    holds the plan state in LevelDB and waits. There is no timeout: the plan
+    stays in status "running" for as long as the worker is down.
 
 Step 5 — Restart the weather worker
 
@@ -67,13 +68,19 @@ Test B — Orchestrator Restart
 Goal: show that restarting the orchestrator does not prevent new requests from
 completing successfully.
 
-The orchestrator persists plan state to LevelDB via shared/state/planStore.ts.
-On restart, any in-flight plans saved before the crash are restored from LevelDB
-and dispatching resumes from the saved stepIndex. New plans also begin normally.
+The orchestrator persists plan state to LevelDB via shared/state/planStore.ts,
+so a restart does not lose it. Recovery is event-driven rather than active: on
+startup initializeStore() only opens the database, nothing scans it for pending
+work. A saved plan resumes when the next event for its conversationId arrives.
+New plans begin normally.
+
+Gap worth knowing: if the process died after savePlan() but before the matching
+ToolInvocationRequested was published, no result will arrive and nothing will
+re-dispatch the step. That plan stays in LevelDB indefinitely.
 
 Step 1 — Start all services
 
-    bash scripts/start-final.sh
+    bun run start
     open http://localhost:3001   # or bun run web:dev for hot-reload
 
 Step 2 — Send a few queries and verify they complete
@@ -121,10 +128,10 @@ Every tool worker checks the toolName field before processing a
 ToolInvocationRequested event. If the name does not match, the message is
 silently skipped.
 
-Source (services/apps/weatherApp.ts):
+Source (src/node/apps/weatherApp.ts):
     if (req.payload.toolName !== "weather") return;
 
-Source (services/apps/mathApp.ts):
+Source (src/node/apps/mathApp.ts):
     if (req.payload.toolName !== "math") return;
 
 This means a broadcast or a duplicate ToolInvocationRequested event for a
@@ -140,7 +147,7 @@ conversationId in its state store. If the id is unknown (e.g. a duplicate
 result after the plan was already completed and the state was deleted) the
 event is discarded with a warning.
 
-Source (services/orchestration/orchestrator.ts):
+Source (src/node/orchestration/orchestrator.ts):
     if (!state) {
       console.warn(`[orchestrator] Received result for unknown conversationId=${conversationId}, skipping.`);
       return;
@@ -193,5 +200,5 @@ Summary
 Test                    Mechanism                           Recovery
 ------------------      --------------------------------    -------------------
 Worker crash            Kafka offset replay on restart      Automatic
-Orchestrator restart    Stateless for new plans             Automatic
+Orchestrator restart    LevelDB state survives              Event-driven
 Duplicate events        toolName filter + id guard          Silent drop
