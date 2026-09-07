@@ -1,0 +1,26 @@
+{
+  "scripts": {
+    "start": "bun scripts/start.ts",
+    "stop": "bun scripts/stop.ts",
+    "router": "bun src/node/core/routerService.ts",
+    "orchestrator": "bun src/node/orchestration/orchestrator.ts",
+    "aggregator": "bun src/node/orchestration/aggregator.ts",
+    "synthesizer": "bun src/node/orchestration/answerSynthesizer.ts",
+    "math": "bun src/node/apps/mathApp.ts",
+    "weather": "bun src/node/apps/weatherApp.ts",
+    "exchange": "bun src/node/apps/exchangeApp.ts",
+    "chat": "bun src/node/apps/generalChatApp.ts",
+    "web": "bun src/node/core/webServer.ts",
+    "web:dev": "cd src/frontend && bun run dev"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "level": "^10.0.0",
+    "openai": "^6.27.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "bun-types": "^1.3.10"
+  }
+}

@@ -1,0 +1,58 @@
+# ─── Environment ──────────────────────────────────────────────────────────────
+.env
+
+# ─── Node / Bun ───────────────────────────────────────────────────────────────
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# ─── TypeScript build output ──────────────────────────────────────────────────
+# Commit the built frontend so reviewers don't need to run a build step
+dist/
+!src/frontend/dist/
+*.tsbuildinfo
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+scripts/logs/
+
+# ─── Runtime data ─────────────────────────────────────────────────────────────
+history.json
+.plan-store/
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# ─── Local vector database (rebuild with: python rag/index_kb.py) ─────────────
+src/python/rag/chroma_db/
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# ─── Docker ───────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+tmp/
+temp/
+.cache/
+coverage/
+
+# ─── Claude Code (internal dev files) ────────────────────────────────────────
+.claude/
+CLAUDE.md
