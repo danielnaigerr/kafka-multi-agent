@@ -19,7 +19,7 @@ unprocessed `ToolInvocationRequested` events automatically.
 
 ```bash
 # 1. Start all services
-bash scripts/start-final.sh
+bun run start
 open http://localhost:3001   # or bun run web:dev for hot-reload
 
 # 2. Send a query that routes to the math worker
@@ -66,15 +66,24 @@ resume automatically.
 **What breaks:** The orchestrator process is killed and restarted.
 
 **Why it recovers:** The orchestrator persists plan state to LevelDB via
-`shared/state/planStore.ts`. On restart it loads the stored state and continues
-dispatching from the last saved `stepIndex`. Plans that were mid-flight are
-resumed; new plans begin normally.
+`shared/state/planStore.ts`, so a crash does not lose it. Recovery is
+**event-driven, not active**: on startup `initializeStore()` only opens the
+database — nothing scans it for pending work. A plan resumes when the next event
+for its `conversationId` arrives and `getPlan()` finds the saved state.
+
+**Known gap:** if the process died after `savePlan()` but before its
+`ToolInvocationRequested` was published, no result will ever arrive and nothing
+re-dispatches the step. That plan stays in LevelDB indefinitely — with
+`status: "pending"` if it was the first step, since `status` is only set to
+`"running"` after the dispatch succeeds, or `"running"` if a later step was
+already in flight. Closing this would require a startup pass over the store that
+re-dispatches every plan in either state.
 
 ### Steps
 
 ```bash
 # 1. Start all services
-bash scripts/start-final.sh
+bun run start
 open http://localhost:3001   # or bun run web:dev for hot-reload
 
 # 2. Verify end-to-end works
@@ -89,8 +98,8 @@ pkill -f "orchestrator.ts"
 bun src/node/orchestration/orchestrator.ts \
   >> scripts/logs/final-project-services/orchestrator.log 2>&1 &
 
-#    On startup the orchestrator reads LevelDB for any persisted plan state.
-#    Any incomplete plan is dispatched from the saved stepIndex.
+#    On startup the orchestrator only opens LevelDB — it does not scan it.
+#    Saved state is picked up when the next event for that conversation arrives.
 
 # 5. Send a new query
 #    Type in the UI:
@@ -102,18 +111,20 @@ convert 50 eur to usd
 ### Expected log output (orchestrator.log)
 
 ```
-[orchestrator] starting — loading state from LevelDB
-[orchestrator] LevelDB loaded N persisted plan(s)
-[orchestrator] conv-yyy plan received steps=[exchange]
-[orchestrator] conv-yyy dispatching tool="exchange"
-[orchestrator] conv-yyy step 1/1 completed tool="exchange"
-[orchestrator] conv-yyy plan completed, results=1
+[orchestrator] PlanStore initialized
+[orchestrator] OrchestratorService started.
+[orchestrator] conversationId=conv-yyy plan received steps=[exchange]
+[orchestrator] conversationId=conv-yyy dispatching tool="exchange"
+[orchestrator] conversationId=conv-yyy step 1/1 completed tool="exchange"
+[orchestrator] conversationId=conv-yyy plan completed, results=1
 ```
 
 ### Expected outcome
 
-New requests complete end-to-end after the restart. Any in-flight plans whose
-state was persisted to LevelDB before the crash are also resumed.
+New requests complete end-to-end after the restart. An in-flight plan whose
+state was persisted before the crash resumes as soon as its next
+`ToolInvocationResulted` arrives — provided the tool request had already been
+published before the crash. If it had not, the plan does not resume on its own.
 
 ---
 
@@ -126,16 +137,16 @@ or manual re-publish via CLI).
 **Why it is handled idempotently:** Two independent guards prevent duplicate
 processing.
 
-### Guard 1 — Tool workers filter by `tool` name
+### Guard 1 — Tool workers filter by `toolName`
 
 Each worker checks the `tool` field of every `ToolInvocationRequested` event
 before processing. Events intended for another worker are silently skipped.
 
 ```typescript
-// services/apps/mathApp.ts
+// src/node/apps/mathApp.ts
 if (req.payload.toolName !== "math") return;
 
-// services/apps/weatherApp.ts
+// src/node/apps/weatherApp.ts
 if (req.payload.toolName !== "weather") return;
 ```
 
@@ -149,7 +160,7 @@ When a `ToolInvocationResulted` arrives the orchestrator looks up the
 completed and state removed) the event is discarded.
 
 ```typescript
-// services/orchestration/orchestrator.ts
+// src/node/orchestration/orchestrator.ts
 if (!state) {
   console.warn(`[orchestrator] unknown conversationId=${conversationId}, skipping.`);
   return;
@@ -189,6 +200,13 @@ docker exec -it kafka kafka-console-producer.sh \
 The UI receives exactly one answer. The duplicate event is silently dropped by
 the orchestrator. No duplicate answer is displayed.
 
+**Scope of this guard:** it relies on `deletePlan()` having removed the state at
+completion, so it covers duplicates that arrive *after* a plan finishes. There is
+no deduplication key, so a duplicate `ToolInvocationResulted` arriving *mid-plan*
+would be appended twice and advance `stepIndex` by two, skipping a step. The
+delivery model is at-least-once with idempotent completion guards, not
+end-to-end exactly-once.
+
 ---
 
 ## Summary
@@ -196,5 +214,5 @@ the orchestrator. No duplicate answer is displayed.
 | Test                | Mechanism                              | Recovery    |
 |---------------------|----------------------------------------|-------------|
 | Worker crash        | Kafka offset replay on restart         | Automatic   |
-| Orchestrator crash  | LevelDB state reload on restart        | Automatic   |
+| Orchestrator crash  | LevelDB state survives; resumes on next event | Event-driven |
 | Duplicate events    | `tool` name filter + conversationId guard | Silent drop |

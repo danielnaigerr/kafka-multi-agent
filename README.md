@@ -20,6 +20,19 @@ The router adds a third tier: if **both** providers fail, it falls back to a det
 
 `bun run start` detects a running Ollama instance and pulls the configured model automatically; if Ollama is not reachable it logs the fact and continues.
 
+### Model capability — measured
+
+Running locally is free, but the default `llama3.2:1b` is not equally suited to both LLM calls in the pipeline. Measured against this repository:
+
+| Call | Prompt size | `llama3.2:1b` (CPU) |
+|---|---|---|
+| Short structured request | ~10 tokens | **611 ms**, correct JSON |
+| `routerPlanPrompt` | ~1,900 tokens (~20 few-shot examples) | **111.6 s**, degenerate repetition |
+
+The router prompt is large enough to push a 1B model into a repetition loop. Its output stayed *structurally* valid — duplicate JSON keys parse, last one wins — so it satisfied the router's shape validation and yielded a wrong plan instead of triggering the regex fallback.
+
+Practical guidance: `llama3.2:1b` is fine for answer synthesis, whose prompt is far shorter. For a fully local run that also routes well, point `OLLAMA_MODEL` at a larger model. With `gpt-4o-mini` the router averages ~1,113 ms — see [`docs/benchmark.md`](docs/benchmark.md).
+
 ---
 
 ## Request flow
@@ -114,6 +127,20 @@ Splitting commands from events keeps each service to one narrow job: producers n
 | LLM unavailable | Ollama → OpenAI → regex planner | Automatic |
 
 Reproduction steps: [`docs/resilience-tests/resilience-demo.md`](docs/resilience-tests/resilience-demo.md)
+
+### Degradation observed end to end
+
+A live run with `llama3.2:1b` and a placeholder OpenAI key exercised all three router tiers in one request:
+
+```
+[llm]    ollama-unavailable reason="The operation timed out." fallback=openai
+[router] mode=regex-fallback reason="401 Incorrect API key provided: your_ope***here"
+[router] plan=[math] input="what is 25 * 4"
+```
+
+Ollama timed out on the ~1,900-token router prompt, OpenAI rejected the placeholder key, and the regex planner produced the correct plan. The pipeline then completed normally and returned `100`. Measured for that request: `workerLatency=324ms`, `synthesizerLatency=6,245ms` — synthesis ran on the same local model without trouble, since its prompt is far shorter.
+
+The RAG worker happened to be down during that run (its Python dependencies were still installing) and the pipeline was unaffected, which is the isolation property the topic-per-tool design is meant to give.
 
 ---
 
@@ -216,6 +243,9 @@ Stated plainly, because they are deliberate trade-offs rather than oversights:
 - **State is node-local.** LevelDB and `history.json` both live on the machine running the process, so a second orchestrator instance would not see the first one's plans.
 - **Idempotency is partial.** A duplicate result arriving after a plan completes is dropped, since the plan record is deleted on completion. A duplicate arriving mid-plan would be counted twice — there is no dedup key.
 - **One session per WebSocket connection.** Refreshing the browser starts a new session and loses conversation history.
+- **Plan validation is structural, not semantic.** The router checks that every step names a known tool and carries an args object, but not that a `{{step_N.result}}` placeholder refers to an earlier step that exists. Structurally valid nonsense passes, and the regex fallback never fires.
+- **The synthesizer has no fallback.** The router degrades across three tiers (Ollama → OpenAI → regex); `answerSynthesizer` calls the LLM without a catch, so if every provider fails the pipeline produces no final answer.
+- **Anti-hallucination is prompt-level only.** `synthesisPrompt` instructs the model not to add information absent from the tool results, but nothing enforces it. In a local run with `llama3.2:1b`, a product question was misrouted to the `chat` tool, and the synthesizer produced a fluent, entirely fabricated spec sheet from a non-answer — while the correct data sat in the vector store, un-queried. The regex planner would have routed it correctly, but it only runs when the LLM *fails*, not when it succeeds badly.
 
 ---
 
