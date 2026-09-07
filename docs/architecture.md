@@ -1,8 +1,8 @@
-# Final Project — Architecture
+# Architecture
 
 ## Overview
 
-The Final Project implements an **event-sourced, multi-step AI agent** built on Apache Kafka. Every component is a stateless microservice that communicates exclusively through Kafka topics — no service calls another service directly. Coordination is achieved entirely through immutable events.
+This system implements an **event-sourced, multi-step AI agent** built on Apache Kafka. Every component is a stateless microservice that communicates exclusively through Kafka topics — no service calls another service directly. Coordination is achieved entirely through immutable events.
 
 The system accepts a natural-language query, plans a sequence of tool calls, executes them one at a time, and synthesizes a single coherent answer — all through Kafka.
 
@@ -216,7 +216,7 @@ The Aggregator is stateless — by the time `PlanCompleted` arrives, the full re
 Latency is measured via `timestamp` fields in event payloads. Services compute deltas and emit `[Benchmark]` log lines.
 
 ```bash
-grep "\[Benchmark\]" scripts/logs/final-project-services/*.log
+grep "\[Benchmark\]" scripts/logs/services/*.log
 ```
 
 Measured across 27 live queries. Averages:
@@ -238,7 +238,7 @@ Defined in `infra/docker-compose.yml`. Three containers, no ZooKeeper (KRaft mod
 | Container | Image | Port | Used by |
 |---|---|---|---|
 | `kafka` | `apache/kafka:3.8.0` | `9092` | All services |
-| `ollama` | `ollama/ollama:latest` | `11434` | Exercise 4 sanitizer (llama3) |
+| `ollama` | `ollama/ollama:latest` | `11434` | Local LLM runtime (llama3.2) |
 | `chromadb` | `chromadb/chroma:latest` | `8000` | RAG retriever |
 
-Topics are created by `infra/topics.sh` (1 partition, all 21 topics). Run `infra/topics-final.sh` afterward to upgrade the four Final Project topics to 3 partitions.
+Topics are created by `infra/create-topics.sh` — four topics, 3 partitions each.

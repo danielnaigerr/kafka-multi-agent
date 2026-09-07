@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Creates the Final Project Kafka topics with 3 partitions.
-# Run after Kafka is up: bash infra/topics-final.sh
+# Creates the four Kafka topics with 3 partitions each.
+# Run after Kafka is up: bash infra/create-topics.sh
 #
-# The general topics.sh creates all topics with 1 partition.
-# This script recreates the four final-project topics with 3 partitions
-# so the orchestrator and tool workers can scale horizontally.
+# Three partitions per topic let the orchestrator and tool workers scale
+# horizontally while preserving message ordering within a conversation.
 
 set -euo pipefail
 
@@ -31,7 +30,7 @@ for TOPIC in "${TOPICS[@]}"; do
 done
 
 echo ""
-echo "Final-project topics ready."
+echo "Topics ready."
 echo ""
 echo "Verify with:"
 echo "  docker exec $KAFKA_CONTAINER /opt/kafka/bin/kafka-topics.sh \\"

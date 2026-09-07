@@ -159,7 +159,7 @@ The RAG worker happened to be down during that run (its Python dependencies were
 ```bash
 cp .env.example .env
 docker compose -f infra/docker-compose.yml up -d
-bash infra/topics-final.sh        # 4 topics × 3 partitions
+bash infra/create-topics.sh        # 4 topics × 3 partitions
 bun install
 
 # Python RAG worker
@@ -176,7 +176,7 @@ cd ../..
 
 ```bash
 bun run start                     # launches all 10 services in the background
-                                  # logs → scripts/logs/final-project-services/
+                                  # logs → scripts/logs/services/
 ```
 
 Open **http://localhost:3001**. For hot-reload development use `bun run web:dev` (Vite on port 5173, proxying `/ws` to 3001).
@@ -209,7 +209,7 @@ Consumer lag measured 0 across all ten groups after the run.
 ```
 ├── infra/
 │   ├── docker-compose.yml          Kafka (KRaft), Ollama, ChromaDB
-│   └── topics-final.sh             creates 4 topics × 3 partitions
+│   └── create-topics.sh             creates 4 topics × 3 partitions
 ├── scripts/
 │   ├── start.ts                    waits for Kafka, pulls the model, starts 10 services
 │   └── stop.ts

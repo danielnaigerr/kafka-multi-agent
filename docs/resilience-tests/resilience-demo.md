@@ -1,4 +1,4 @@
-# Resilience Demo — Kafka AI Agent (Final Project)
+# Resilience Demo — Kafka AI Agent
 
 Three failure scenarios with expected behavior and recovery steps.
 
@@ -36,7 +36,7 @@ pkill -f "mathApp.ts"
 #    The plan is pending — no answer arrives yet.
 
 # 5. Restart the math worker
-bun src/node/apps/mathApp.ts >> scripts/logs/final-project-services/math.log 2>&1 &
+bun src/node/apps/mathApp.ts >> scripts/logs/services/math.log 2>&1 &
 
 #    The worker picks up the pending message from the last committed offset,
 #    computes the result, and emits ToolInvocationResulted.
@@ -96,7 +96,7 @@ pkill -f "orchestrator.ts"
 
 # 4. Restart the orchestrator
 bun src/node/orchestration/orchestrator.ts \
-  >> scripts/logs/final-project-services/orchestrator.log 2>&1 &
+  >> scripts/logs/services/orchestrator.log 2>&1 &
 
 #    On startup the orchestrator only opens LevelDB — it does not scan it.
 #    Saved state is picked up when the next event for that conversation arrives.
