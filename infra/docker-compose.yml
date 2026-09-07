@@ -19,7 +19,7 @@ services:
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # ── Exercise 4 sanitizer (llama3) ────────────────────────────────────────────
+  # ── Local LLM runtime (Ollama) ───────────────────────────────────────────────
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -28,7 +28,7 @@ services:
     volumes:
       - ollama-data:/root/.ollama
 
-  # ── Final Project RAG retrieval ───────────────────────────────────────────────
+  # ── Vector store for RAG retrieval ────────────────────────────────────────────
   chromadb:
     image: chromadb/chroma:latest
     container_name: chromadb

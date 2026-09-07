@@ -1,10 +1,10 @@
-Resilience Tests — Kafka AI Agent (Final Project)
+Resilience Tests — Kafka AI Agent
 
 This document describes three practical resilience demonstrations for the
 event-driven pipeline. All commands assume the repository root as the working
 directory and that Kafka is running via infra/docker-compose.yml.
 
-Log files are written to scripts/logs/final-project-services/.
+Log files are written to scripts/logs/services/.
 
 -------------------------------------------------------------------------------
 Test A — Worker Crash Recovery
@@ -26,7 +26,7 @@ Step 2 — Send a query that triggers the weather worker
     Type in the UI:
         weather in tel aviv
 
-    Expected log sequence (scripts/logs/final-project-services/):
+    Expected log sequence (scripts/logs/services/):
 
         [router]        conversationId=<id> plan=[weather]
         [Benchmark]     conversationId=<id> routerLatency=Xms
@@ -53,7 +53,7 @@ Step 4 — Send another query while the worker is down
 
 Step 5 — Restart the weather worker
 
-    bun src/node/apps/weatherApp.ts >> scripts/logs/final-project-services/weather.log 2>&1 &
+    bun src/node/apps/weatherApp.ts >> scripts/logs/services/weather.log 2>&1 &
 
     The restarted worker picks up the pending message from Kafka and processes it.
     The pipeline completes and FinalAnswerSynthesized is delivered to the UI.
@@ -97,7 +97,7 @@ Step 3 — Stop the orchestrator
 
 Step 4 — Restart the orchestrator
 
-    bun src/node/orchestration/orchestrator.ts >> scripts/logs/final-project-services/orchestrator.log 2>&1 &
+    bun src/node/orchestration/orchestrator.ts >> scripts/logs/services/orchestrator.log 2>&1 &
 
 Step 5 — Send a new query
 
