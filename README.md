@@ -4,6 +4,8 @@ An event-driven multi-agent system built on Apache Kafka. A user question is dec
 
 The point of the architecture is decoupling slow LLM calls from the request path: the web server publishes a command and returns immediately, and the answer arrives later over a WebSocket. Ten processes coordinate through four topics and eight event contracts — no service holds a reference to any other.
 
+> Originally built as a two-person course project and rewritten here as a standalone repository with a fresh commit history.
+
 ---
 
 ## Runs at zero API cost
